@@ -1,1 +1,2 @@
 from .list_boleto_factory import list_boleto_factory
+from .upload_from_csv_factory import upload_from_csv_factory
