@@ -59,9 +59,12 @@ class BoletoRepository(BoletoRepositoryContract):
         self, limit: int | None = None, offset: int | None = None
     ) -> List[Boleto]:
 
-        items = self.db.execute(
-            "select id, name, debitId, governmentId, email, debitAmount, dueDate from boleto"
-        ).fetchall()
+        sql = "select id, name, debitId, governmentId, email, debitAmount, dueDate from boleto"
+
+        if limit is not None and offset is not None:
+            sql = f"{sql} LIMIT {limit} OFFSET {offset}"
+
+        items = self.db.execute(sql).fetchall()
 
         boletos = [
             Boleto(
