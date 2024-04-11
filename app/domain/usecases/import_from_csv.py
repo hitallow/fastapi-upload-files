@@ -3,6 +3,8 @@ import csv
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List
 
+from fastapi import HTTPException
+
 from app.domain.contracts.boleto_repository import BoletoRepositoryContract
 from app.domain.contracts.usecase import BaseData, Usecase
 from app.domain.entities.boleto import Boleto
@@ -61,7 +63,13 @@ class UploadFromCSVUsecase(Usecase[UploadFromCSVRequest, UploadFromCSVResponse])
             executor.map(self._handle_data, chunks)
 
     def execute(self, data: UploadFromCSVRequest) -> UploadFromCSVResponse:
-        rows = csv.DictReader(codecs.iterdecode(data.file, "utf-8"))
-        self._save_in_parallel(list(rows))
+        rows = list(csv.DictReader(codecs.iterdecode(data.file, "utf-8")))
+
+        if len(rows) > 5 * 1000:
+            raise HTTPException(
+                status_code=400, detail="File too large, please use async route"
+            )
+
+        self._save_in_parallel(rows)
 
         return UploadFromCSVResponse()
