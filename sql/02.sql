@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS file (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  filename VARCHAR(50),
+  orignalFilename VARCHAR(50),
+  size FLOAT
+)

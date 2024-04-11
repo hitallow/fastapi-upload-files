@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS kanastra;
+-- CREATE DATABASE IF NOT EXISTS kanastra;
 -- create table to handle migrations
 CREATE TABLE migrations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
