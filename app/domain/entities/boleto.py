@@ -2,7 +2,7 @@ from app.domain.entities.entity import Entity
 
 
 class Boleto(Entity):
-    id: str
+    id: str | None = None
     name: str
     debit_id: str
     government_id: str
