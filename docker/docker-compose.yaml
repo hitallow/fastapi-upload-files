@@ -7,9 +7,24 @@ services:
       dockerfile: ./docker/Dockerfile
     ports:
       # Change on the .env file on the root of the project
-      - ${APP_PORT}:80
+      - ${APP_PORT:-8081}:80
     volumes:
       - ../:/home/app
+    networks:
+      - kanastra_network
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:3.0.2
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559" # external services port range
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - kanastra_network
 networks:

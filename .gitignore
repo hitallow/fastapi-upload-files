@@ -29,3 +29,5 @@ archive.zip
 # macOS
 .DS_Store
 database.db
+docker/volume/cache/*
+.env
