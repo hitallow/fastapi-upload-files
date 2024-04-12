@@ -4,6 +4,7 @@ import boto3
 
 from app.domain.contracts.queue import Queue
 from app.domain.contracts.queue_event import QueueEvent
+from app.presentation.factories.sqs_handler_factory import sqs_handler_factory
 
 
 class Sqs(Queue):
@@ -31,17 +32,31 @@ class Sqs(Queue):
             MessageBody=json.dumps(
                 {
                     "DelaySeconds": event.get_delay_seconds(),
-                    "body": json.dumps(
-                        {
-                            "eventName": event.get_event_name(),
-                            "payload": event.get_payload(),
-                        }
+                    "eventName": event.get_event_name(),
+                    "payload": json.dumps(
+                        event.get_payload(),
                     ),
                 }
             ),
         )
 
     def consume(self):
-        for message in self.sqsClient.receive_messages():
-            print(message)
-            message.delete()
+        response = self.sqsClient.receive_message(QueueUrl=self._queue_name)
+        if "Messages" in response:
+            for message in response["Messages"]:
+                message_body = json.loads(message["Body"])
+                event_name = message_body["eventName"]
+                print(f"doing {event_name}")
+                payload = json.loads(message_body["payload"])
+
+                handler = sqs_handler_factory(event_name, payload)
+
+                if handler:
+                    handler.handle()
+
+                self.sqsClient.delete_message(
+                    QueueUrl=self._queue_name,
+                    ReceiptHandle=message["ReceiptHandle"],
+                )
+        else:
+            print("nothing to read")
