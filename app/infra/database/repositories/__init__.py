@@ -1,1 +1,3 @@
 from .boleto_repository import BoletoRepository
+from .file_import_repository import FileImportRepository
+from .file_repository import FileRepository
