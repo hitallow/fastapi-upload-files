@@ -1,16 +1,17 @@
 from typing import List
 
 from app.domain.contracts.repository_factory import RepositoryFactoryContract
-from app.domain.contracts.usecase import BaseData, Usecase
+from app.domain.contracts.usecase import Usecase
+from app.domain.entities.entity import Entity
 
 
-class ListBoletoRequest(BaseData):
+class ListBoletoRequest(Entity):
     limit: int | None = 100
     offset: int | None = 0
     boleto_id: int | None = None
 
 
-class ListBoletoResponse(BaseData):
+class ListBoletoResponse(Entity):
     total_items: int
     boletos: List
 

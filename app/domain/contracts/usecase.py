@@ -1,20 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+from app.domain.entities.entity import Entity
+
+# from pydantic import BaseModel
 
 
-class BaseClassConfig:
-    populate_by_name = True
-
-
-class BaseData(BaseModel):
-    class Config(BaseClassConfig):
-        pass
-
-
-Output = TypeVar("Output", bound=BaseData)
-Input = TypeVar("Input", bound=BaseData)
+Output = TypeVar("Output", bound=Entity | None)
+Input = TypeVar("Input", bound=Entity | None)
 
 
 class Usecase(ABC, Generic[Input, Output]):

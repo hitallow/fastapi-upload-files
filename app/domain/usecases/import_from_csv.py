@@ -4,19 +4,20 @@ from uuid import uuid4
 
 from app.domain.contracts.repository_factory import RepositoryFactoryContract
 from app.domain.contracts.third_party_factory import ThirdPartyFactoryContract
-from app.domain.contracts.usecase import BaseData, Usecase
+from app.domain.contracts.usecase import Usecase
 from app.domain.entities import File, FileImport
+from app.domain.entities.entity import Entity
 from app.domain.usecases.handle_import_csv import HandleImportCSVEvent
 
 
-class UploadFromCSVRequest(BaseData):
+class UploadFromCSVRequest(Entity):
     file: Any
     filename: str
     size: int
 
 
-class UploadFromCSVResponse(BaseData):
-    pass
+class UploadFromCSVResponse(Entity):
+    file_import: FileImport
 
 
 class UploadFromCSVUsecase(Usecase[UploadFromCSVRequest, UploadFromCSVResponse]):
@@ -53,13 +54,15 @@ class UploadFromCSVUsecase(Usecase[UploadFromCSVRequest, UploadFromCSVResponse])
 
         self.logging.info("arquivo salvo, iniciando importação ...")
 
-        self.queue.publish(
-            HandleImportCSVEvent(
-                file_import_id=file_import.id,  # type: ignore
-                filename=imported_file.filename,
-                target=0,
-                lines=500,
-            )
-        )
+        # self.queue.publish(
+        #     HandleImportCSVEvent(
+        #         file_import_id=file_import.id,  # type: ignore
+        #         filename=imported_file.filename,
+        #         target=0,
+        #         lines=500,
+        #     )
+        # )
 
-        return UploadFromCSVResponse()
+        return UploadFromCSVResponse(
+            file_import=file_import
+        )
