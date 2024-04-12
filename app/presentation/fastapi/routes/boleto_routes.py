@@ -4,6 +4,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.domain.usecases import (ListBoletoRequest, ListBoletoResponse,
                                  UploadFromCSVRequest)
+from app.domain.usecases.import_from_csv import UploadFromCSVResponse
 from app.presentation.factories import (list_boleto_factory,
                                         upload_from_csv_factory)
 
@@ -23,27 +24,10 @@ async def list_all_boleto(limit: int = 30, offset: int = 0):
 
 @router.post(
     "/import-from-file",
-    summary="Upload arquivos CSV para popular tabela de boletos",
-    description="Endpoint multi-thread para upload de aquivos CSV",
-    status_code=HTTPStatus.NO_CONTENT,
-)
-async def import_from_file(
-    file: UploadFile = File(description="Arquivo CSV para leitura de dados"),
-):
-    if file.content_type != "text/csv":
-        raise HTTPException(HTTPStatus.BAD_REQUEST, "invalid file type")
-
-    output = upload_from_csv_factory().execute(UploadFromCSVRequest(file=file.file))
-    file.file.close()
-
-    return output
-
-
-@router.post(
-    "/import-from-file-async",
     summary="Faz o upload do arquivo e executa o ",
     description="Endpoint multi-thread para upload de aquivos CSV",
-    status_code=HTTPStatus.NO_CONTENT,
+    status_code=HTTPStatus.OK,
+    response_model=UploadFromCSVResponse
 )
 async def import_from_file_async(
     file: UploadFile = File(description="Arquivo CSV para leitura de dados"),
@@ -51,7 +35,16 @@ async def import_from_file_async(
     if file.content_type != "text/csv":
         raise HTTPException(HTTPStatus.BAD_REQUEST, "invalid file type")
 
-    output = upload_from_csv_factory().execute(UploadFromCSVRequest(file=file.file))
+    file_in_bytes = await file.read()
+
+    output = upload_from_csv_factory().execute(
+        UploadFromCSVRequest(
+            file=file_in_bytes,
+            filename=file.filename or "not-informed",
+            size=file.size or 0,
+        ),
+    )
+
     file.file.close()
 
     return output
