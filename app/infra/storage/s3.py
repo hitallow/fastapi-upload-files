@@ -2,6 +2,9 @@ import boto3
 
 from app.domain.contracts.storage import Storage
 from app.domain.entities.file import File
+from app.domain.exceptions.file_not_found_exception import \
+    FileNotFoundException
+from app.domain.exceptions.upload_file_exception import UploadFileException
 
 
 class S3(Storage):
@@ -23,9 +26,22 @@ class S3(Storage):
             self.s3Client.create_bucket(Bucket=self.__bucket_name)
 
     def upload(self, file: File) -> File:
-        self.s3Client.put_object(
-            Bucket=self.__bucket_name,
-            Key=f"imports/{file.filename}",
-            Body=file.tempFile,
-        )
-        return file
+        try:
+            self.s3Client.put_object(
+                Bucket=self.__bucket_name,
+                Key=f"imports/{file.filename}",
+                Body=file.tempFile,
+            )
+            return file
+        except Exception as error:
+            raise UploadFileException() from error
+
+    def load(self, filename: str) -> bytes:
+        try:
+            res = self.s3Client.get_object(
+                Bucket=self.__bucket_name,
+                Key=f"imports/{filename}",
+            )
+            return res["Body"].read()
+        except Exception as error:
+            raise FileNotFoundException() from error
