@@ -23,6 +23,8 @@ class MigrationRunner:
             and "manual" not in filename
         ]
 
+        sql_files.sort()
+
         return sql_files
 
     def _load_file(self, filename: str) -> str:
