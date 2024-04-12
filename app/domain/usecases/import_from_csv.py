@@ -1,17 +1,18 @@
-import codecs
-import csv
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List
+from time import time
+from typing import Any
+from uuid import uuid4
 
-from fastapi import HTTPException
-
-from app.domain.contracts.boleto_repository import BoletoRepositoryContract
+from app.domain.contracts.repository_factory import RepositoryFactoryContract
+from app.domain.contracts.third_party_factory import ThirdPartyFactoryContract
 from app.domain.contracts.usecase import BaseData, Usecase
-from app.domain.entities.boleto import Boleto
+from app.domain.entities import File, FileImport
+from app.domain.usecases.handle_import_csv import HandleImportCSVEvent
 
 
 class UploadFromCSVRequest(BaseData):
     file: Any
+    filename: str
+    size: int
 
 
 class UploadFromCSVResponse(BaseData):
@@ -19,57 +20,46 @@ class UploadFromCSVResponse(BaseData):
 
 
 class UploadFromCSVUsecase(Usecase[UploadFromCSVRequest, UploadFromCSVResponse]):
+    def __init__(
+        self,
+        repository_factory: RepositoryFactoryContract,
+        third_party_factory: ThirdPartyFactoryContract,
+    ) -> None:
+        self.file_import_repository = repository_factory.get_file_import_repository()
+        self.file_repository = repository_factory.get_file_repository()
+        self.storage = third_party_factory.get_storage()
+        self.queue = third_party_factory.get_queue()
+        self.logging = third_party_factory.get_logging()
 
-    def __init__(self, boleto_repository: BoletoRepositoryContract) -> None:
-        self.boleto_repository = boleto_repository
-
-    def _handle_data(self, rows: List[Dict[str, str]]):
-        try:
-            boletos = []
-            for row in rows:
-                boletos.append(
-                    Boleto(
-                        id="Olá",
-                        name=row["name"],
-                        debit_amount=int(row["debtAmount"]),
-                        email=row["email"],
-                        government_id=row["governmentId"],
-                        debit_id=row["debtId"],
-                        due_date=1,
-                    )
-                )
-
-            self.boleto_repository.insert_many(boletos)
-        except Exception as e:
-            print("houve um erro meu camarada")
-            print(e)
-
-    def _break_in_chunks(self, lista, partes=4):
-        tamanho_parte = len(lista) // partes
-        resto = len(lista) % partes
-        n = []
-        inicio = 0
-        for i in range(partes):
-            tamanho = tamanho_parte + (1 if i < resto else 0)
-            n.append(lista[inicio : inicio + tamanho])
-            inicio += tamanho
-        return n
-
-    def _save_in_parallel(self, rows: List):
-        threads = 8 if len(rows) >= 100 else 2
-        chunks = self._break_in_chunks(rows, threads)
-
-        with ThreadPoolExecutor(max_workers=threads) as executor:
-            executor.map(self._handle_data, chunks)
-
-    def execute(self, data: UploadFromCSVRequest) -> UploadFromCSVResponse:
-        rows = list(csv.DictReader(codecs.iterdecode(data.file, "utf-8")))
-
-        if len(rows) > 5 * 1000:
-            raise HTTPException(
-                status_code=400, detail="File too large, please use async route"
+    def execute(self, file: UploadFromCSVRequest) -> UploadFromCSVResponse:
+        imported_file = self.storage.upload(
+            File(
+                filename=f"{str(uuid4())}.csv",
+                orignalFilename=file.filename,
+                size=file.size,
+                tempFile=file.file,
             )
+        )
 
-        self._save_in_parallel(rows)
+        file_import = self.file_import_repository.insert_one(
+            FileImport(
+                title="UploadCSV",
+                status="processing",
+                created_at=int(time()),
+                updated_at=int(time()),
+                file=self.file_repository.insert_one(imported_file),
+            )
+        )
+
+        self.logging.info("arquivo salvo, iniciando importação ...")
+
+        self.queue.publish(
+            HandleImportCSVEvent(
+                file_import_id=file_import.id,  # type: ignore
+                filename=imported_file.filename,
+                target=0,
+                lines=500,
+            )
+        )
 
         return UploadFromCSVResponse()
