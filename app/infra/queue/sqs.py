@@ -1,4 +1,5 @@
 import json
+import os
 
 import boto3
 
@@ -15,10 +16,10 @@ class Sqs(Queue):
         self.logging = logging
         self.sqsClient = boto3.client(
             "sqs",
-            endpoint_url="http://localstack:4566",
             region_name="sa-east-1",
-            aws_access_key_id="foo",
-            aws_secret_access_key="000000000000",
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+            endpoint_url=os.getenv("AWS_URL"),
         )
         self._create_queue()
 

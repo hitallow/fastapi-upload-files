@@ -1,3 +1,5 @@
+import os
+
 import boto3
 
 from app.domain.contracts.storage import Storage
@@ -11,12 +13,11 @@ class S3(Storage):
     __bucket_name = "kanastra-imports"
 
     def __init__(self) -> None:
-        # adjust for prod
         self.s3Client = boto3.client(
             service_name="s3",
-            aws_access_key_id="foo",
-            aws_secret_access_key="000000000000",
-            endpoint_url="http://localstack:4566",
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+            endpoint_url=os.getenv('AWS_URL'),
         )
 
         self._create_bucket()
