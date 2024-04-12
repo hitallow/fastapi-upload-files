@@ -1,0 +1,2 @@
+class UploadFileException(Exception):
+    pass
