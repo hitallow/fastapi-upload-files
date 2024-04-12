@@ -2,6 +2,7 @@ import json
 
 import boto3
 
+from app.domain.contracts.logging import Logging
 from app.domain.contracts.queue import Queue
 from app.domain.contracts.queue_event import QueueEvent
 from app.presentation.factories.sqs_handler_factory import sqs_handler_factory
@@ -10,7 +11,8 @@ from app.presentation.factories.sqs_handler_factory import sqs_handler_factory
 class Sqs(Queue):
     _queue_name = "kanastra-imports"
 
-    def __init__(self) -> None:
+    def __init__(self, logging: Logging) -> None:
+        self.logging = logging
         self.sqsClient = boto3.client(
             "sqs",
             endpoint_url="http://localstack:4566",
@@ -46,17 +48,21 @@ class Sqs(Queue):
             for message in response["Messages"]:
                 message_body = json.loads(message["Body"])
                 event_name = message_body["eventName"]
-                print(f"doing {event_name}")
                 payload = json.loads(message_body["payload"])
+
+                self.logging.info(f"reading {event_name}")
 
                 handler = sqs_handler_factory(event_name, payload)
 
                 if handler:
+                    self.logging.info("executing handler")
                     handler.handle()
+                else:
+                    self.logging.debug("not found an handler")
 
                 self.sqsClient.delete_message(
                     QueueUrl=self._queue_name,
                     ReceiptHandle=message["ReceiptHandle"],
                 )
         else:
-            print("nothing to read")
+            self.logging.info("nothing to read")
