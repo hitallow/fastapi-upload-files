@@ -1,2 +1,4 @@
 from .boleto_repository import BoletoRepositoryContract
+from .file_import_repository import FileImportRepositoryContract
+from .file_repository import FileRepositoryContract
 from .usecase import Usecase
