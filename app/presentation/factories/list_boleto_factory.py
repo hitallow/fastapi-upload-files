@@ -1,8 +1,8 @@
 from app.domain.usecases.list_boletos import ListBoletoUsecase
-from app.infra.database.repositories import BoletoRepository
+from app.presentation.factories.repository_factory import RepositoryFactory
 
 
 def list_boleto_factory() -> ListBoletoUsecase:
     return ListBoletoUsecase(
-        boleto_repository=BoletoRepository()
+        repository_factory=RepositoryFactory(),
     )
