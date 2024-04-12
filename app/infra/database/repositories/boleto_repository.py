@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from app.domain.contracts import BoletoRepositoryContract
 from app.domain.entities import Boleto
+from app.domain.entities.paginted_list import PaginatedEntities
 from app.infra.database.connection import Connection
 
 
@@ -55,14 +56,20 @@ class BoletoRepository(BoletoRepositoryContract):
 
         return boletos
 
+    def __count_all_items(self) -> int:
+        r = self.db.execute("select count(*) as total from boleto;").fetchone()
+        return r[0]
+
     def get_all(
         self, limit: int | None = None, offset: int | None = None
-    ) -> List[Boleto]:
+    ) -> PaginatedEntities:
 
         sql = "select id, name, debitId, governmentId, email, debitAmount, dueDate from boleto"
 
         if limit is not None and offset is not None:
-            sql = f"{sql} LIMIT {limit} OFFSET {offset}"
+            sql = f"{sql} LIMIT {limit} OFFSET {offset * limit}"
+
+        print(self.__count_all_items())
 
         items = self.db.execute(sql).fetchall()
 
@@ -78,7 +85,10 @@ class BoletoRepository(BoletoRepositoryContract):
             )
             for db_data in items
         ]
-        return boletos
+        return PaginatedEntities(
+            total_items=self.__count_all_items(),
+            items=boletos
+        )
 
     def get_by_id(self, id: str) -> Boleto:
         raise Exception

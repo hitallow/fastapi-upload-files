@@ -23,12 +23,12 @@ class ListBoletoUsecase(Usecase):
 
     def execute(self, data: ListBoletoRequest) -> ListBoletoResponse:
 
-        boletos = self.boleto_repository.get_all(
+        page = self.boleto_repository.get_all(
             limit=data.limit,
             offset=data.offset,
         )
 
         return ListBoletoResponse(
-            total_items=len(boletos),
-            boletos=boletos,
+            total_items=page.total_items,
+            boletos=page.items,
         )

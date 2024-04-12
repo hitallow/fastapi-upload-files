@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 from app.domain.entities.boleto import Boleto
+from app.domain.entities.paginted_list import PaginatedEntities
 
 
 class BoletoRepositoryContract(ABC):
@@ -21,5 +22,5 @@ class BoletoRepositoryContract(ABC):
     @abstractmethod
     def get_all(
         self, limit: int | None = None, offset: int | None = None
-    ) -> List[Boleto]:
+    ) -> PaginatedEntities:
         raise NotImplementedError
