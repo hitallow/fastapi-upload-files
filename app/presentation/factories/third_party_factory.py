@@ -1,4 +1,5 @@
 from app.domain.contracts.logging import Logging
+from app.domain.contracts.mail import Mail
 from app.domain.contracts.queue import Queue
 from app.domain.contracts.storage import Storage
 from app.domain.contracts.third_party_factory import ThirdPartyFactoryContract
@@ -9,6 +10,7 @@ class ThirdPartyFactory(ThirdPartyFactoryContract):
     _queue: Queue | None = None
     _storage: Storage | None = None
     _logging: Logging | None = None
+    _mail: Mail | None = None
 
     def get_queue(self) -> Queue:
 
@@ -31,3 +33,11 @@ class ThirdPartyFactory(ThirdPartyFactoryContract):
 
             self._logging = Logging()
         return self._logging
+    
+    def get_mail(self) -> Mail:
+        if not self._mail:
+            from app.infra.mail.mail import SmtpMail
+
+            self._mail = SmtpMail(self.get_logging())
+
+        return self._mail
