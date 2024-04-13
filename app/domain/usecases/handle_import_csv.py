@@ -20,7 +20,7 @@ class HandleImportCSVEvent(QueueEvent, Entity):
 
     def get_payload(self) -> Dict:
         return {
-            "file_import_id": self.file_import_id,
+            "fileImportId": self.file_import_id,
             "filename": self.filename,
             "target": self.target,
             "lines": self.lines,
@@ -32,7 +32,7 @@ class HandleImportCSVEvent(QueueEvent, Entity):
     @staticmethod
     def from_payload(event: Dict) -> "HandleImportCSVEvent":
         return HandleImportCSVEvent(
-            file_import_id=event["file_import_id"],
+            file_import_id=event["fileImportId"],
             filename=event["filename"],
             target=event["target"],
             lines=event["lines"],
