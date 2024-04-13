@@ -61,17 +61,19 @@ class BoletoRepository(BoletoRepositoryContract):
         return r[0]
 
     def get_all(
-        self, limit: int | None = None, offset: int | None = None
-    ) -> PaginatedEntities:
+        self,
+        limit: int | None = None,
+        offset: int | None = None,
+        from_date: int | None = None,
+    ) -> PaginatedEntities[Boleto]:
 
         sql = "select id, name, debitId, governmentId, email, debitAmount, dueDate from boleto"
 
+        if from_date is not None:
+            sql = f"{sql} WHERE dueDate = {from_date}"
+
         if limit is not None and offset is not None:
             sql = f"{sql} LIMIT {limit} OFFSET {offset * limit}"
-
-        print(self.__count_all_items())
-
-        items = self.db.execute(sql).fetchall()
 
         boletos = [
             Boleto(
@@ -83,12 +85,9 @@ class BoletoRepository(BoletoRepositoryContract):
                 debit_amount=db_data[5],
                 due_date=db_data[6],
             )
-            for db_data in items
+            for db_data in self.db.execute(sql).fetchall()
         ]
-        return PaginatedEntities(
-            total_items=self.__count_all_items(),
-            items=boletos
-        )
+        return PaginatedEntities(total_items=self.__count_all_items(), items=boletos)
 
     def get_by_id(self, id: str) -> Boleto:
         raise Exception

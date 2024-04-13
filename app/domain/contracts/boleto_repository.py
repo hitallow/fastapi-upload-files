@@ -21,6 +21,9 @@ class BoletoRepositoryContract(ABC):
 
     @abstractmethod
     def get_all(
-        self, limit: int | None = None, offset: int | None = None
-    ) -> PaginatedEntities:
+        self, 
+        limit: int | None = None, 
+        offset: int | None = None,
+        from_date: int | None = None,
+    ) -> PaginatedEntities[Boleto]:
         raise NotImplementedError
