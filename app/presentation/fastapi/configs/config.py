@@ -1,6 +1,10 @@
 import importlib
 import os
+import threading
+import time
+from contextlib import asynccontextmanager
 
+import schedule
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,9 +33,55 @@ def apply_routes_config(app: FastAPI):
             pass
 
 
+def apply_crons():
+
+    path = os.path.dirname(__file__) + "/../crons/"
+
+    crons_registers = [
+        filename.replace(".py", "")
+        for filename in os.listdir(path)
+        if filename.endswith("crons.py")
+    ]
+
+    for cron_file in crons_registers:
+        try:
+            importlib.import_module(
+                f"app.presentation.fastapi.crons.{cron_file}"
+            ).register()
+        except Exception as e:
+            print(e)
+            pass
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    apply_crons()
+
+    watch_crons = True
+
+    def run_scheduler():
+        while watch_crons:
+            schedule.run_pending()
+            time.sleep(1)
+
+    thread = threading.Thread(target=run_scheduler)
+    thread.start()
+
+    yield
+
+    watch_crons = False
+    schedule.clear()
+    time.sleep(2)
+    print("parando threads")
+
+
 def create_app():
 
-    app = FastAPI(title="Kanastra Upload", description="Upload de arquivos CSV")
+    app = FastAPI(
+        title="Kanastra Upload",
+        description="Upload de arquivos CSV",
+        lifespan=lifespan,
+    )
 
     app.add_middleware(
         CORSMiddleware,
