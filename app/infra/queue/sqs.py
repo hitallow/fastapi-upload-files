@@ -6,6 +6,8 @@ import boto3
 from app.domain.contracts.logging import Logging
 from app.domain.contracts.queue import Queue
 from app.domain.contracts.queue_event import QueueEvent
+from app.domain.exceptions.publish_queue_task_exception import \
+    PublishQueueTaskException
 from app.presentation.factories.sqs_handler_factory import sqs_handler_factory
 
 
@@ -30,18 +32,22 @@ class Sqs(Queue):
             self.sqsClient.create_queue(QueueName=self._queue_name)
 
     def publish(self, event: QueueEvent):
-        self.sqsClient.send_message(
-            QueueUrl=self._queue_name,
-            MessageBody=json.dumps(
-                {
-                    "DelaySeconds": event.get_delay_seconds(),
-                    "eventName": event.get_event_name(),
-                    "payload": json.dumps(
-                        event.get_payload(),
-                    ),
-                }
-            ),
-        )
+        try:
+            self.sqsClient.send_message(
+                QueueUrl=self._queue_name,
+                DelaySeconds=event.get_delay_seconds(),
+                MessageBody=json.dumps(
+                    {
+                        "DelaySeconds": event.get_delay_seconds(),
+                        "eventName": event.get_event_name(),
+                        "payload": json.dumps(
+                            event.get_payload(),
+                        ),
+                    }
+                ),
+            )
+        except Exception as error:
+            raise PublishQueueTaskException() from error
 
     def consume(self):
         response = self.sqsClient.receive_message(QueueUrl=self._queue_name)

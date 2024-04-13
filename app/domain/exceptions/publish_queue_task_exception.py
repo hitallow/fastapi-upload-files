@@ -1,0 +1,2 @@
+class PublishQueueTaskException(Exception):
+    pass
