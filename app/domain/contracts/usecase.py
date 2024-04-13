@@ -3,9 +3,6 @@ from typing import Generic, TypeVar
 
 from app.domain.entities.entity import Entity
 
-# from pydantic import BaseModel
-
-
 Output = TypeVar("Output", bound=Entity | None)
 Input = TypeVar("Input", bound=Entity | None)
 
