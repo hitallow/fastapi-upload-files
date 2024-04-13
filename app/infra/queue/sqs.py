@@ -55,11 +55,16 @@ class Sqs(Queue):
 
                 handler = sqs_handler_factory(event_name, payload)
 
-                if handler:
+                if not handler:
+                    self.logging.info("not found an handler")
+                    return
+
+                try:
                     self.logging.info("executing handler")
                     handler.handle()
-                else:
-                    self.logging.debug("not found an handler")
+                except Exception as e:
+                    self.logging.error(f"error {e}")
+                    return
 
                 self.sqsClient.delete_message(
                     QueueUrl=self._queue_name,
