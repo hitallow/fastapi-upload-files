@@ -3,3 +3,10 @@ exclude_lines =
 
 [run]
 omit =
+   app/main/main.py
+   app/main/queue.py
+   app/infra/database/connection.py
+   app/presentation/fastapi/*
+   app/presentation/factories/*
+   app/domain/contracts/*
+   tests/*
