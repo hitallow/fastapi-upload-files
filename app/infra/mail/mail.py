@@ -31,3 +31,7 @@ class SmtpMail(Mail):
             self.logging.info("error on sent email")
             self.logging.info(e)
             return False
+        except Exception as e:
+            self.logging.info("generic error on sent email")
+            self.logging.info(e)
+            return False
