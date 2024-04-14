@@ -1,6 +1,6 @@
 ## Exemplo de aplicação de upload de arquivo
 
-Essa é um exemplo de aplicação que faz a extração de dados de um arquivo grande CSV utilizando um conjunto de ferramentas interressantes no desenvolvimento de software.
+Essa é um exemplo de aplicação que faz a extração de dados de um arquivo grande CSV utilizando um conjunto de ferramentas interessantes no desenvolvimento de software.
 
 ## Arquitetura usada
 
@@ -28,6 +28,14 @@ Para o desenvolvimento desta aplicação, foram aplicados os princípios da Clea
 
 - **presentation**: Este é o lugar onde é implementada a exposição dos casos de uso, onde o FastAPI (neste caso) monta os endpoints e fornece ao mundo externo todos os casos de uso. Também implementa métodos exclusivos do FastAPI como por exemplo o middleware de gerenciamento de erros.
 
+### Tecnologias utilizadas
+
+Foram utilizadas várias tecnologias para o desenvolvimento, dentre elas:
+- AWS S3;
+- AWS Sqs;
+- FastApi;
+- SMTP;
+- SQL;
 
 # Setup 
 
@@ -50,7 +58,7 @@ Configure as Variaveis de ambiente, preencha com base no seu uso, suas funções
 | MAIL_PORT             | Porta para acesso ao servidor de email            | 
 | MAIL_FROM             | Remetente dos email                               | 
 
-A aplicação pode utilizar localmente o container do localstack, dessa forma, o .env.example já utiliza as credenciais que devem funcionar localmente.
+A aplicação pode utilizar localmente o container do localstack, dessa forma, o `.env.example` já utiliza as credenciais que devem funcionar localmente.
 
 Dessa forma, utilize:
 
@@ -64,12 +72,16 @@ e logo depois
 $ docker compose up
 ```
 
+### Rotas
+
+Na pasta `docs` há um arquivo insominia exportado, nele é possível verificar as rotas criadas e o seu devido uso.
+
 
 #### Migrações
 Após rodar a aplicação, é nescessário criar as informações de banco de dados.
 
-A aplicação tem um mini gerenciador de migrações, que rodar arquivos SQL e os controla para que executem apenas uma vez.
-No entanto é nescessário criar a tabela de migrações manualmente, por questão de exemplo eu fiz uso do SQLite, há um arquivo chamado `execute-manual.sql` dentro da pasta sql. Execute ele manualmente.
+A aplicação tem um mini gerenciador de migrações, que roda arquivos SQL e os controla para que executem apenas uma vez.
+No entanto é nescessário criar a tabela de migrações manualmente, por questão de exemplo eu fiz uso do SQLite, há um arquivo chamado `execute-manual.sql` dentro da pasta sql. Execute ele manualmente utilziando seu brownser SQL de preferencia.
 
 
 Após isso, você deve rodar as migrações, utilize o comando:
