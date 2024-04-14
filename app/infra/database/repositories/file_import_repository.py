@@ -1,6 +1,5 @@
 from datetime import datetime
 from time import time
-from typing import List, Tuple
 from uuid import uuid4
 
 from app.domain.contracts import FileImportRepositoryContract
@@ -68,7 +67,6 @@ class FileImportRepository(FileImportRepositoryContract):
     ) -> PaginatedEntities[FileImport]:
 
         sql = "SELECT id, title, status, createdAt, updatedAt FROM fileImport"
-
 
         if limit is not None and offset is not None:
             sql = f"{sql} LIMIT {limit} OFFSET {offset * limit}"
