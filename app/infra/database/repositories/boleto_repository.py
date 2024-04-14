@@ -4,6 +4,8 @@ from uuid import uuid4
 from app.domain.contracts import BoletoRepositoryContract
 from app.domain.entities import Boleto
 from app.domain.entities.paginted_list import PaginatedEntities
+from app.domain.exceptions.entity_not_found_exception import \
+    EntityNotFoundException
 from app.infra.database.connection import Connection
 
 
@@ -90,4 +92,19 @@ class BoletoRepository(BoletoRepositoryContract):
         return PaginatedEntities(total_items=self.__count_all_items(), items=boletos)
 
     def get_by_id(self, id: str) -> Boleto:
-        raise Exception
+        sql = f"select id, name, debitId, governmentId, email, debitAmount, dueDate from boleto WHERE id = '{id}';"
+
+        boleto = self.db.execute(sql).fetchone()
+
+        if not boleto:
+            raise EntityNotFoundException("Boleto not found")
+
+        return Boleto(
+            id=boleto[0],
+            name=boleto[1],
+            debit_id=boleto[2],
+            government_id=boleto[3],
+            email=boleto[4],
+            debit_amount=boleto[5],
+            due_date=boleto[6],
+        )
