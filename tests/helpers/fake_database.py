@@ -4,6 +4,9 @@ class FakeDB:
 
     def commit(self):
         return self
+    
+    def fetchone(self):
+        return self
 
     def execute(self, *params):
         return self
