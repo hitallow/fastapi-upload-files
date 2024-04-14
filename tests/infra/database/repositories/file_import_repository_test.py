@@ -129,3 +129,60 @@ def test_should_insert_one_file_import(faker):
             file_import.file.id,  # type: ignore
         ),
     )
+
+
+@pytest.mark.parametrize(
+    ["limit", "offset"],
+    [
+        (10, None),
+        (None, None),
+        (None, 10),
+        (10, 10),
+    ],
+)
+def test_should_test_all_cases_of_get_all(
+    limit: int,
+    offset: int,
+    faker,
+    fake_database: FakeDB,
+):
+    total_items = faker.random_int(min=1, max=100)
+
+    files_import = [make_file_import() for _ in range(total_items)]
+
+    fake_database.execute = MagicMock(return_value=fake_database)
+    fake_database.fetchall = MagicMock(
+        return_value=[
+            (
+                f.id,
+                f.title,
+                f.status,
+                datetime.fromtimestamp(f.created_at).strftime("%Y-%m-%d %H:%M:%S"),
+                datetime.fromtimestamp(f.updated_at).strftime("%Y-%m-%d %H:%M:%S"),
+            )
+            for f in files_import
+        ]
+    )
+    fake_database.fetchone = MagicMock(return_value=[total_items])
+
+    with patch.object(Connection, "get_database", return_value=fake_database):
+        repository = FileImportRepository()
+
+    paginated = repository.get_all(limit=limit, offset=offset)
+
+    assert paginated.total_items == total_items
+    assert len(paginated.items) == len(files_import)
+    fake_database.fetchone.assert_called_once()
+    fake_database.fetchall.assert_called_once()
+
+    sql_of_query = "SELECT id, title, status, createdAt, updatedAt FROM fileImport"
+
+    if limit is not None and offset is not None:
+        sql_of_query = f"SELECT id, title, status, createdAt, updatedAt FROM fileImport LIMIT {limit} OFFSET {offset * limit}"
+
+    fake_database.execute.assert_has_calls(
+        [
+            call(sql_of_query),
+            call("select count(*) as total from fileImport;"),
+        ]
+    )
