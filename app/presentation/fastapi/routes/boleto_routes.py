@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from app.domain.entities.boleto import Boleto
 from app.domain.usecases import (ListBoletoRequest, ListBoletoResponse,
                                  UploadFromCSVRequest)
 from app.domain.usecases.import_from_csv import UploadFromCSVResponse
@@ -54,8 +55,8 @@ async def import_from_file_async(
     "/{boleto_id}",
     summary="Lista todos os boletos",
     description="Lista todos os boletos de forma paginada",
-    response_model=ListBoletoResponse,
+    response_model=Boleto,
     status_code=HTTPStatus.OK,
 )
-async def list_boleto_by_id(boleto_id: int):
+async def list_boleto_by_id(boleto_id: str):
     return list_boleto_factory().execute(ListBoletoRequest(boleto_id=boleto_id))
