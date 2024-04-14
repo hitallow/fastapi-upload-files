@@ -8,6 +8,9 @@ import schedule
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.presentation.fastapi.middlewares.error_handling_middleware import \
+    ErrorHandlingMiddleware
+
 
 def apply_routes_config(app: FastAPI):
     """
@@ -89,6 +92,8 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.add_middleware(ErrorHandlingMiddleware)
 
     apply_routes_config(app)
 
