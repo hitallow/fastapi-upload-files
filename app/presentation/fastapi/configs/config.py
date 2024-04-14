@@ -81,8 +81,8 @@ async def lifespan(app: FastAPI):
 def create_app():
 
     app = FastAPI(
-        title="Kanastra Upload",
-        description="Upload de arquivos CSV",
+        title="FasAPI Upload",
+        description="Upload de arquivos CSV para importação de dados",
         lifespan=lifespan,
     )
 
