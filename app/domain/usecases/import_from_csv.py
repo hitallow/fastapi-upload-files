@@ -54,14 +54,14 @@ class UploadFromCSVUsecase(Usecase[UploadFromCSVRequest, UploadFromCSVResponse])
 
         self.logging.info("arquivo salvo, iniciando importação ...")
 
-        # self.queue.publish(
-        #     HandleImportCSVEvent(
-        #         file_import_id=file_import.id,  # type: ignore
-        #         filename=imported_file.filename,
-        #         target=0,
-        #         lines=500,
-        #     )
-        # )
+        self.queue.publish(
+            HandleImportCSVEvent(
+                file_import_id=file_import.id,  # type: ignore
+                filename=imported_file.filename,
+                target=0,
+                lines=500,
+            )
+        )
 
         return UploadFromCSVResponse(
             file_import=file_import
