@@ -5,6 +5,8 @@ from uuid import uuid4
 
 from app.domain.contracts import FileImportRepositoryContract
 from app.domain.entities import FileImport
+from app.domain.exceptions.entity_not_found_exception import \
+    EntityNotFoundException
 from app.infra.database.connection import Connection
 
 
@@ -33,6 +35,9 @@ class FileImportRepository(FileImportRepositoryContract):
     def get_by_id(self, id: str) -> FileImport:
         sql = "SELECT id, title, status, createdAt, updatedAt FROM fileImport  WHERE id = ?"
         reply = self.db.execute(sql, (id,)).fetchone()
+
+        if not reply:
+            raise EntityNotFoundException("FileImport not found")
 
         return FileImport(
             id=reply[0],
