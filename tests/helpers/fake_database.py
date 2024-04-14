@@ -10,8 +10,14 @@ class FakeDB:
     
     def fetchall(self):
         return self
+    
+    def close(self):
+        return self
 
     def execute(self, *params):
+        return self
+    
+    def executescript(self, *params):
         return self
     
     def executemany(self, *params):
