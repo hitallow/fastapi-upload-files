@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from app.domain.contracts import FileImportRepositoryContract
 from app.domain.entities import FileImport
+from app.domain.entities.paginted_list import PaginatedEntities
 from app.domain.exceptions.entity_not_found_exception import \
     EntityNotFoundException
 from app.infra.database.connection import Connection
@@ -56,3 +57,34 @@ class FileImportRepository(FileImportRepositoryContract):
         self.db.execute(sql, (status, id))
         self.db.commit()
         return self.get_by_id(id)
+
+    def __count_all_items(self) -> int:
+        return self.db.execute("select count(*) as total from fileImport;").fetchone()[0]
+
+    def get_all(
+        self,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> PaginatedEntities[FileImport]:
+
+        sql = "SELECT id, title, status, createdAt, updatedAt FROM fileImport"
+
+
+        if limit is not None and offset is not None:
+            sql = f"{sql} LIMIT {limit} OFFSET {offset * limit}"
+
+        file_imports = [
+            FileImport(
+                id=db_data[0],
+                title=db_data[1],
+                status=db_data[2],
+                created_at=int(
+                    datetime.strptime(db_data[3], "%Y-%m-%d %H:%M:%S").timestamp()
+                ),
+                updated_at=int(
+                    datetime.strptime(db_data[4], "%Y-%m-%d %H:%M:%S").timestamp()
+                ),
+            )
+            for db_data in self.db.execute(sql).fetchall()
+        ]
+        return PaginatedEntities(total_items=self.__count_all_items(), items=file_imports)
