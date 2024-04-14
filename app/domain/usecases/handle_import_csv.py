@@ -10,6 +10,8 @@ from app.domain.entities.boleto import Boleto
 from app.domain.entities.entity import Entity
 from app.domain.exceptions.file_not_found_exception import \
     FileNotFoundException
+from app.domain.exceptions.publish_queue_task_exception import \
+    PublishQueueTaskException
 
 
 class HandleImportCSVEvent(QueueEvent, Entity):
@@ -114,6 +116,12 @@ class HandleImportCSVUsecase(Handler):
             self.queue.publish(self._event)
         except FileNotFoundException:
             self.logger.error("arquivo nao encontrado.")
+            self.file_import_repository.update_status(
+                self._event.file_import_id, "error"
+            )
+
+        except PublishQueueTaskException:
+            self.logger.error("erro ao publicar.")
             self.file_import_repository.update_status(
                 self._event.file_import_id, "error"
             )
